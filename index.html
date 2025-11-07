@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>Зачётка</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+    }
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      margin-top: 20px;
+    }
+    th, td {
+      border: 1px solid #ccc;
+      padding: 8px;
+      text-align: left;
+    }
+    th {
+      background-color: #f2f2f2;
+    }
+    input[type="text"], input[type="date"], select {
+      width: 100%;
+      padding: 5px;
+      box-sizing: border-box;
+    }
+    button {
+      padding: 8px 12px;
+      margin-top: 10px;
+    }
+    .form-section {
+      margin-bottom: 20px;
+    }
+  </style>
+</head>
+<body>
+
+<h1>Моя Зачётка</h1>
+
+<div class="form-section">
+  <h3>Добавить запись</h3>
+  <label>Предмет: <input type="text" id="subjectInput"></label><br><br>
+  <label>Оценка:
+    <select id="gradeInput">
+      <option value="Зачтено">Зачтено</option>
+      <option value="Не зачтено">Не зачтено</option>
+      <option value="5">5</option>
+      <option value="4">4</option>
+      <option value="3">3</option>
+      <option value="2">2</option>
+    </select>
+  </label><br><br>
+  <label>Дата: <input type="date" id="dateInput"></label><br><br>
+  <label>Комментарий: <input type="text" id="commentInput"></label><br><br>
+  <button onclick="addRow()">Добавить</button>
+</div>
+
+<table id="gradeTable">
+  <thead>
+    <tr>
+      <th>Предмет</th>
+      <th>Оценка</th>
+      <th>Дата</th>
+      <th>Комментарий</th>
+      <th>Действия</th>
+    </tr>
+  </thead>
+  <tbody id="tableBody">
+    <!-- Строки будут добавляться сюда -->
+  </tbody>
+</table>
+
+<script>
+  const STORAGE_KEY = 'gradesData';
+  let grades = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+
+  // Функция для отображения строк из массива
+  function renderTable() {
+    const tableBody = document.getElementById('tableBody');
+    tableBody.innerHTML = ''; // Очищаем таблицу
+
+    grades.forEach((item, index) => {
+      const row = tableBody.insertRow();
+      row.insertCell(0).textContent = item.subject;
+      row.insertCell(1).textContent = item.grade;
+      row.insertCell(2).textContent = item.date;
+      row.insertCell(3).textContent = item.comment || '';
+      const actionsCell = row.insertCell(4);
+      actionsCell.innerHTML = `<button onclick="deleteRow(${index})">Удалить</button>`;
+    });
+  }
+
+  // Функция для добавления новой строки
+  function addRow() {
+    const subject = document.getElementById('subjectInput').value.trim();
+    const grade = document.getElementById('gradeInput').value;
+    const date = document.getElementById('dateInput').value;
+    const comment = document.getElementById('commentInput').value.trim();
+
+    if (!subject || !grade || !date) {
+      alert('Пожалуйста, заполните обязательные поля: Предмет, Оценка, Дата.');
+      return;
+    }
+
+    const newRow = {
+      subject: subject,
+      grade: grade,
+      date: date,
+      comment: comment
+    };
+
+    grades.push(newRow);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(grades)); // Сохраняем в localStorage
+    renderTable(); // Обновляем таблицу
+
+    // Очищаем форму
+    document.getElementById('subjectInput').value = '';
+    document.getElementById('gradeInput').value = 'Зачтено';
+    document.getElementById('dateInput').value = '';
+    document.getElementById('commentInput').value = '';
+  }
+
+  // Функция для удаления строки
+  function deleteRow(index) {
+    if (confirm('Удалить эту запись?')) {
+      grades.splice(index, 1); // Удаляем из массива
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(grades)); // Обновляем localStorage
+      renderTable(); // Обновляем таблицу
+    }
+  }
+
+  // При загрузке страницы отображаем сохранённые данные
+  window.onload = function() {
+    renderTable();
+  };
+</script>
+
+</body>
+</html>
